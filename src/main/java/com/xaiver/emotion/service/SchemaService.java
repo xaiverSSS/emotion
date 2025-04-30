@@ -3,6 +3,7 @@ package com.xaiver.emotion.service;
 import com.xaiver.emotion.dao.SchemaMapper;
 import com.xaiver.emotion.model.TableSchema;
 import com.xaiver.emotion.utils.CamelCaseUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.jdbc.SQL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 
 import static com.xaiver.emotion.constants.SchemaConstants.*;
 
+@Slf4j
 @Service
 public class SchemaService {
     @Resource
@@ -24,9 +26,12 @@ public class SchemaService {
         List<TableSchema> schemas = schemaMapper.querySchema(table);
 
         String columns = packColumns(schemas);
+        log.info(columns);
         String aliasColumns = packAliasColumns(schemas, null, table);
-        String properties = packProperties(schemas);
+        log.info(aliasColumns);
+//        String properties = packProperties(schemas);
         SQL insertSQL = packInsert(schemas, table);
+        log.info(insertSQL.toString());
     }
 
     /**

@@ -13,7 +13,7 @@ public class CamelCaseUtils {
         if(!input.contains(FLAG4)){
             return input;
         }
-        String[] split = input.split("_");
+        String[] split = input.split(FLAG4);
         StringBuffer buffer = new StringBuffer();
         char char0;
         String sp;
@@ -28,9 +28,10 @@ public class CamelCaseUtils {
             }
             char0 = sp.charAt(0);
             if(0 == i){
-                buffer.append(97>char0?char0+32:char0).append(sp.substring(1));
+                buffer.append(97>char0?(char)(char0+32):char0).append(sp.substring(1));
+                continue;
             }
-            buffer.append(97>char0?char0:char0-32).append(sp.substring(1));
+            buffer.append(97>char0?char0:(char)(char0-32)).append(sp.substring(1));
         }
         return buffer.toString();
     }
