@@ -13,7 +13,7 @@ class EmotionApplicationTests {
     private SchemaService schemaService;
     @Test
     void test() {
-        schemaService.generate("enterprise_record");
+        schemaService.generate("wfmidenti","enterprise_record");
     }
 
 }

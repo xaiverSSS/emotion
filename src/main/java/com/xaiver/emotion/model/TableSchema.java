@@ -5,6 +5,8 @@ public class TableSchema {
     private String comment;
     private String type;
 
+    private String property;
+
     public String getColumn() {
         return column;
     }
@@ -27,5 +29,13 @@ public class TableSchema {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getProperty() {
+        return property;
+    }
+
+    public void setProperty(String property) {
+        this.property = property;
     }
 }
