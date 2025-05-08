@@ -1,10 +1,2 @@
 server:
   port: 8080
-
-spring:
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://tidb-test.uenpay.com:4000/wfmidenti?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
-    username: wfmadmin
-    password: wfmadmin
-
