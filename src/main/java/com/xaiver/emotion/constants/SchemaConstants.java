@@ -1,10 +1,8 @@
 package com.xaiver.emotion.constants;
 
 public class SchemaConstants {
-    public static final String SPACE = " ";
     public static final String FLAG1 = "`";
     public static final String FLAG2 = ".";
-    public static final String FLAG3 = ",";
     public static final String FLAG4 = "_";
     public static final String FLAG5 = "#{";
     public static final String FLAG6 = "}";
