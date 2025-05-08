@@ -12,7 +12,7 @@ class EmotionApplicationTests {
     @Autowired
     private SchemaService schemaService;
     @Test
-    void test() {
+    void test() throws ClassNotFoundException {
         schemaService.generate("wfmidenti","enterprise_record");
     }
 

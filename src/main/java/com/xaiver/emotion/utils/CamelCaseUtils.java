@@ -10,6 +10,10 @@ import static com.xaiver.emotion.constants.SchemaConstants.FLAG4;
 public class CamelCaseUtils {
 
     public static String convertToCamelCase(String input) {
+        return convertToCamelCase(input, false);
+    }
+
+    public static String convertToCamelCase(String input, boolean upperFirst){
         if(!input.contains(FLAG4)){
             return input;
         }
@@ -27,12 +31,17 @@ public class CamelCaseUtils {
                 continue;
             }
             char0 = sp.charAt(0);
-            if(0 == i){
+            if(!upperFirst && 0==i) {
                 buffer.append(97>char0?(char)(char0+32):char0).append(sp.substring(1));
-                continue;
+            }else{
+                buffer.append(97>char0?char0:(char)(char0-32)).append(sp.substring(1));
             }
-            buffer.append(97>char0?char0:(char)(char0-32)).append(sp.substring(1));
         }
         return buffer.toString();
+    }
+
+    public static String lowerFirst(String clause){
+        char char0 = clause.charAt(0);
+        return (97 > char0 ? (char) (char0 + 32) : char0) + clause.substring(1);
     }
 }

@@ -3,6 +3,7 @@ package com.xaiver.emotion.service;
 import com.xaiver.emotion.dao.SchemaMapper;
 import com.xaiver.emotion.model.TableSchema;
 import com.xaiver.emotion.utils.CamelCaseUtils;
+import com.xaiver.emotion.utils.MapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.jdbc.SQL;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.xaiver.emotion.constants.MapperConstants.INSERT;
+import static com.xaiver.emotion.constants.MapperConstants.VOID;
 import static com.xaiver.emotion.constants.SchemaConstants.*;
 
 @Slf4j
@@ -22,17 +25,25 @@ public class SchemaService {
     @Resource
     private SchemaMapper schemaMapper;
 
-    ThreadLocal<String> tableTL = new ThreadLocal<>();
-    ThreadLocal<String> databaseTL = new ThreadLocal<>();
-    ThreadLocal<String> primaryTL = new ThreadLocal<>();
-    ThreadLocal<List<TableSchema>> schemasTL = new ThreadLocal<>();
-    public void generate(String database, String table){
+    private ThreadLocal<String> tableTL = new ThreadLocal<>();
+    private ThreadLocal<String> databaseTL = new ThreadLocal<>();
+    private ThreadLocal<TableSchema> primaryTL = new ThreadLocal<>();
+    private ThreadLocal<List<TableSchema>> schemasTL = new ThreadLocal<>();
+    private ThreadLocal<String> dbDONameTL = new ThreadLocal<>();
+    public void generate(String database, String table) throws ClassNotFoundException {
         try {
             databaseTL.set(database);
             tableTL.set(table);
+            dbDONameTL.set(CamelCaseUtils.convertToCamelCase(table, true));
             String primary = schemaMapper.queryPrimaryKey(database, table);
-            primaryTL.set(primary);
+
             List<TableSchema> schemas = schemaMapper.querySchema(table);
+            schemas.forEach(e->{
+                if(primary.equalsIgnoreCase(e.getColumn())){
+                    e.setProperty(CamelCaseUtils.convertToCamelCase(e.getColumn()));
+                    primaryTL.set(e);
+                }
+            });
             schemasTL.set(schemas);
             if(null==schemas || schemas.isEmpty()){
                 return;
@@ -51,11 +62,20 @@ public class SchemaService {
             log.info("selectSQL:{}", selectSQL);
             SQL updateSQL = packUpdate();
             log.info("updateSQL:{}", updateSQL);
+            String insertFunName = MapperUtils.insertFunName(dbDONameTL.get());
+            log.info("insertFunName:{}", insertFunName);
+            String deleteFunName = MapperUtils.deleteFunName(primaryTL.get());
+            log.info("deleteFunName:{}", deleteFunName);
+            String updateFunName = MapperUtils.updateFunName(dbDONameTL.get());
+            log.info("updateFunName:{}", updateFunName);
+            String selectFunName = MapperUtils.selectFunName(dbDONameTL.get(), primaryTL.get());
+            log.info("selectFunName:{}", selectFunName);
         }finally {
             databaseTL.remove();
             tableTL.remove();
             primaryTL.remove();
             schemasTL.remove();
+            dbDONameTL.remove();
         }
     }
 
@@ -129,6 +149,6 @@ public class SchemaService {
     }
 
     private String packPrimaryWhereClause(){
-        return primaryTL.get() +" = "+ FLAG5 +primaryTL.get()+ FLAG6;
+        return primaryTL.get().getProperty() +" = "+ FLAG5 +primaryTL.get()+ FLAG6;
     }
 }
