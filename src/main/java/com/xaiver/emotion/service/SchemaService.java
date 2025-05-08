@@ -85,6 +85,7 @@ public class SchemaService {
         }
         entitySchema.setProps(props);
         log.info("entitySchema:{}", entitySchema);
+        EntityUtils.write(entitySchema);
         return entitySchema;
     }
 

@@ -4,7 +4,6 @@ import com.xaiver.emotion.enums.AccessModifierEnum;
 import com.xaiver.emotion.enums.SQLTypeEnum;
 import lombok.Data;
 import org.apache.ibatis.jdbc.SQL;
-
 import java.util.LinkedList;
 import java.util.List;
 

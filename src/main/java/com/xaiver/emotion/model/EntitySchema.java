@@ -2,8 +2,6 @@ package com.xaiver.emotion.model;
 
 import com.xaiver.emotion.enums.AccessModifierEnum;
 import lombok.Data;
-import org.springframework.util.ObjectUtils;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -21,9 +19,5 @@ public class EntitySchema {
         private AccessModifierEnum accessModifier;
         private Class javaClass;
         private String name;
-    }
-
-    public boolean isInit(){
-        return Objects.nonNull(name) && Objects.nonNull(props);
     }
 }

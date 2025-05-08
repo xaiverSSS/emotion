@@ -1,8 +1,14 @@
 package com.xaiver.emotion.constants;
 
 public class CommonConstants {
+    public static final String GENERATE_OUTPUT = "generate_output";
+    public static final String PACKAGE = "package";
+    public static final String CLAZZ = "class";
+    public static final String JAVA_POST = ".java";
     public static final String PRIVATE = "private";
     public static final String SPACE = " ";
+    public static final String TAB = "  ";
+    public static final String TAB2 = "     ";
     public static final String EQUAL = "=";
     public static final String VOID = "void";
     public static final String BRACE0= "{";
