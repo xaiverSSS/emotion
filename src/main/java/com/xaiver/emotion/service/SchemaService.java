@@ -1,16 +1,22 @@
 package com.xaiver.emotion.service;
 
 import com.xaiver.emotion.dao.SchemaMapper;
+import com.xaiver.emotion.enums.AccessModifierEnum;
+import com.xaiver.emotion.enums.SQLTypeEnum;
+import com.xaiver.emotion.model.EntitySchema;
+import com.xaiver.emotion.model.MapperSchema;
 import com.xaiver.emotion.model.TableSchema;
 import com.xaiver.emotion.utils.CamelCaseUtils;
+import com.xaiver.emotion.utils.ClassWordUtils;
 import com.xaiver.emotion.utils.EntityUtils;
 import com.xaiver.emotion.utils.MapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.jdbc.SQL;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import static com.xaiver.emotion.constants.CommonConstants.*;
@@ -22,18 +28,15 @@ public class SchemaService {
     @Resource
     private SchemaMapper schemaMapper;
 
-    private ThreadLocal<String> tableTL = new ThreadLocal<>();
     private ThreadLocal<String> databaseTL = new ThreadLocal<>();
+    private ThreadLocal<String> tableTL = new ThreadLocal<>();
     private ThreadLocal<TableSchema> primaryTL = new ThreadLocal<>();
     private ThreadLocal<List<TableSchema>> schemasTL = new ThreadLocal<>();
-    private ThreadLocal<String> dbDONameTL = new ThreadLocal<>();
     public void generate(String database, String table) throws ClassNotFoundException {
         try {
             databaseTL.set(database);
             tableTL.set(table);
-            dbDONameTL.set(CamelCaseUtils.convertToCamelCase(table, true));
             String primary = schemaMapper.queryPrimaryKey(database, table);
-
             List<TableSchema> schemas = schemaMapper.querySchema(table);
             schemas.forEach(e->{
                 if(primary.equalsIgnoreCase(e.getColumn())){
@@ -47,55 +50,88 @@ public class SchemaService {
             }
             schemas.forEach(e->e.setProperty(CamelCaseUtils.convertToCamelCase(e.getColumn())));
 
-            mkDBEntity();
-
-            mkMapperInterface();
-
+            EntitySchema entitySchema = mkDBEntity();
+            Assert.notNull(entitySchema, "Entity Not Found");
+            MapperSchema mapperSchema = mkDBMapper(entitySchema);
         }finally {
             databaseTL.remove();
             tableTL.remove();
             primaryTL.remove();
             schemasTL.remove();
-            dbDONameTL.remove();
         }
     }
 
     /**
      * 生成DO Entity
+     * 类权限修饰符 Public
+     * 类名 根据表明生成驼峰形式
+     * 属性 字段序列顺序
+     * 属性权限修饰符 Private
+     * 属性类型 字段类型映射Java Class
+     *
+     * @throws ClassNotFoundException
      */
-    private void mkDBEntity() throws ClassNotFoundException {
-        List<String> props = new ArrayList<>();
+    private EntitySchema mkDBEntity() throws ClassNotFoundException {
+        EntitySchema entitySchema = new EntitySchema();
+        entitySchema.setAccessModifier(AccessModifierEnum.PUBLIC);
+        entitySchema.setName(EntityUtils.entityName(tableTL.get()));
+        List<EntitySchema.PropSchema> props = new LinkedList<>();
         for (TableSchema e : schemasTL.get()) {
-            props.add(EntityUtils.completeProperty(e));
+            EntitySchema.PropSchema prop = new EntitySchema.PropSchema();
+            prop.setAccessModifier(AccessModifierEnum.PRIVATE);
+            prop.setJavaClass(ClassWordUtils.getJavaClass(e));
+            prop.setName(e.getProperty());
+            props.add(prop);
         }
-        log.info("props:{}", props);
+        entitySchema.setProps(props);
+        log.info("entitySchema:{}", entitySchema);
+        return entitySchema;
     }
 
     /**
      * 生成Mapper Interface
      * @throws ClassNotFoundException
      */
-    private void mkMapperInterface() throws ClassNotFoundException {
-        String columns = packColumns();
-        log.info("columns:{}", columns);
-        String aliasColumns = packAliasColumns(null);
-        log.info("aliasColumns:{}", aliasColumns);
-        SQL insertSQL = packInsert();
-        log.info("insertSQL:{}", insertSQL);
-        SQL deleteSQL = packDelete();
-        log.info("deleteSQL:{}", deleteSQL);
-        SQL selectSQL = packSelect();
-        log.info("selectSQL:{}", selectSQL);
-        SQL updateSQL = packUpdate();
-        log.info("updateSQL:{}", updateSQL);
-        String insertFunName = MapperUtils.insertFunName(dbDONameTL.get());
-        log.info("insertFunName:{}", insertFunName);
-        String deleteFunName = MapperUtils.deleteFunName(primaryTL.get());
-        log.info("deleteFunName:{}", deleteFunName);
-        String updateFunName = MapperUtils.updateFunName(dbDONameTL.get());
-        log.info("updateFunName:{}", updateFunName);
-        String selectFunName = MapperUtils.selectFunName(dbDONameTL.get(), primaryTL.get());
-        log.info("selectFunName:{}", selectFunName);
+    private MapperSchema mkDBMapper(EntitySchema entitySchema) throws ClassNotFoundException {
+        MapperSchema mapperSchema = new MapperSchema();
+        mapperSchema.setName(MapperUtils.interfaceName(tableTL.get()));
+        mapperSchema.setAccessModifier(AccessModifierEnum.PUBLIC);
+
+        List<String> columns = packColumns();
+        mapperSchema.setColumns(columns);
+
+        List<String> aliasColumns = packAliasColumns(null);
+        mapperSchema.setAliasColumns(aliasColumns);
+
+        MapperSchema.MethodSchema insertSchema = new MapperSchema.MethodSchema();
+        insertSchema.setSql(packInsert());
+        insertSchema.setSqlType(SQLTypeEnum.INSERT);
+        insertSchema.setName(MapperUtils.insertFunName(entitySchema));
+        insertSchema.setJavaClass(Void.class);
+        mapperSchema.getMethods().add(insertSchema);
+
+        MapperSchema.MethodSchema deleteSchema = new MapperSchema.MethodSchema();
+        deleteSchema.setSql(packDelete());
+        deleteSchema.setSqlType(SQLTypeEnum.DELETE);
+        deleteSchema.setName(MapperUtils.deleteFunName(primaryTL.get()));
+        deleteSchema.setJavaClass(Void.class);
+        mapperSchema.getMethods().add(deleteSchema);
+
+        MapperSchema.MethodSchema selectSchema = new MapperSchema.MethodSchema();
+        selectSchema.setSql(packSelect());
+        selectSchema.setSqlType(SQLTypeEnum.SELECT);
+        selectSchema.setName(MapperUtils.selectFunName(entitySchema, primaryTL.get()));
+        selectSchema.setJavaClass(Void.class);
+        mapperSchema.getMethods().add(selectSchema);
+
+        MapperSchema.MethodSchema updateSchema = new MapperSchema.MethodSchema();
+        updateSchema.setSql(packSelect());
+        updateSchema.setSqlType(SQLTypeEnum.UPDATE);
+        updateSchema.setName(MapperUtils.updateFunName(entitySchema));
+        updateSchema.setJavaClass(Void.class);
+        mapperSchema.getMethods().add(updateSchema);
+        log.info("mapperSchema:{}", mapperSchema);
+        return mapperSchema;
     }
 
     /**
@@ -150,21 +186,23 @@ public class SchemaService {
      * 生成不带alias的全量字段字符串
      * @return
      */
-    private String packColumns(){
-        StringBuffer sql = new StringBuffer();
-        schemasTL.get().forEach(e-> sql.append(FLAG1).append(e.getColumn()).append(FLAG1).append(COMMA).append(SPACE));
-        return sql.substring(0, sql.length()-2);
+    private List<String> packColumns(){
+        List<String> columns = new LinkedList<>();
+        schemasTL.get().forEach(e-> columns.add(FLAG1+ e.getColumn()+ FLAG1));
+        return columns;
     }
 
     /**
      * 生成带alias的全量字段字符串
      * @return
      */
-    private String packAliasColumns(String alias){
-        String alias2 = null==alias?Arrays.stream(tableTL.get().split(FLAG4)).map(e-> String.valueOf(e.charAt(0))).collect(Collectors.joining()):alias;
-        StringBuffer sql = new StringBuffer();
-        schemasTL.get().forEach(e-> sql.append(alias2).append(FLAG2).append(FLAG1).append(e.getColumn()).append(FLAG1).append(COMMA).append(SPACE));
-        return sql.substring(0, sql.length()-2);
+    private List<String> packAliasColumns(String alias){
+        alias = null==alias?Arrays.stream(tableTL.get().split(FLAG4)).map(e-> String.valueOf(e.charAt(0))).collect(Collectors.joining()):alias;
+        List<String> columns = new LinkedList<>();
+        for (TableSchema e : schemasTL.get()) {
+            columns.add(alias + FLAG2 + FLAG1 + e.getColumn() + FLAG1);
+        }
+        return columns;
     }
 
     private String packPrimaryWhereClause(){
