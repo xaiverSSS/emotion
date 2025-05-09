@@ -53,7 +53,7 @@ public class EntityUtils {
             bw.write(BRACE1);
             bw.flush();
         } catch (IOException e) {
-            System.out.println("写入文件时发生错误：" + e.getMessage());
+            e.printStackTrace();
         }
     }
 

@@ -107,28 +107,28 @@ public class SchemaService {
         MapperSchema.MethodSchema insertSchema = new MapperSchema.MethodSchema();
         insertSchema.setSql(packInsert());
         insertSchema.setSqlType(SQLTypeEnum.INSERT);
-        insertSchema.setName(MapperUtils.insertFunName(entitySchema));
+        insertSchema.setDeclare(MapperUtils.insertFunName(entitySchema));
         insertSchema.setJavaClass(Void.class);
         mapperSchema.getMethods().add(insertSchema);
 
         MapperSchema.MethodSchema deleteSchema = new MapperSchema.MethodSchema();
         deleteSchema.setSql(packDelete());
         deleteSchema.setSqlType(SQLTypeEnum.DELETE);
-        deleteSchema.setName(MapperUtils.deleteFunName(primaryTL.get()));
+        deleteSchema.setDeclare(MapperUtils.deleteFunName(primaryTL.get()));
         deleteSchema.setJavaClass(Void.class);
         mapperSchema.getMethods().add(deleteSchema);
 
         MapperSchema.MethodSchema selectSchema = new MapperSchema.MethodSchema();
         selectSchema.setSql(packSelect());
         selectSchema.setSqlType(SQLTypeEnum.SELECT);
-        selectSchema.setName(MapperUtils.selectFunName(entitySchema, primaryTL.get()));
+        selectSchema.setDeclare(MapperUtils.selectFunName(entitySchema, primaryTL.get()));
         selectSchema.setJavaClass(Void.class);
         mapperSchema.getMethods().add(selectSchema);
 
         MapperSchema.MethodSchema updateSchema = new MapperSchema.MethodSchema();
         updateSchema.setSql(packSelect());
         updateSchema.setSqlType(SQLTypeEnum.UPDATE);
-        updateSchema.setName(MapperUtils.updateFunName(entitySchema));
+        updateSchema.setDeclare(MapperUtils.updateFunName(entitySchema));
         updateSchema.setJavaClass(Void.class);
         mapperSchema.getMethods().add(updateSchema);
         log.info("mapperSchema:{}", mapperSchema);

@@ -5,10 +5,10 @@ import lombok.Getter;
 @Getter
 public enum SQLTypeEnum {
 
-    INSERT("insert"),
-    DELETE("delete"),
-    UPDATE("update"),
-    SELECT("select");
+    INSERT("@Insert"),
+    DELETE("@Delete"),
+    UPDATE("@Update"),
+    SELECT("@Select");
 
     SQLTypeEnum(String value){
         this.value = value;

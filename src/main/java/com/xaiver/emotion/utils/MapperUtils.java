@@ -2,7 +2,14 @@ package com.xaiver.emotion.utils;
 
 import com.mysql.cj.MysqlType;
 import com.xaiver.emotion.model.EntitySchema;
+import com.xaiver.emotion.model.MapperSchema;
 import com.xaiver.emotion.model.TableSchema;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import static com.xaiver.emotion.constants.CommonConstants.*;
 import static com.xaiver.emotion.constants.MapperConstants.*;
 
@@ -53,5 +60,50 @@ public class MapperUtils {
                 .append(BRACKET1)
                 .append(SEMICOLON)
                 .toString();
+    }
+
+    public static void write(MapperSchema schema){
+        File mapperFile = file(schema);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(mapperFile))) {
+            String packageLine = PACKAGE +SPACE +schema.getName() +SEMICOLON;
+            bw.write(packageLine);
+            bw.newLine();
+            bw.newLine();
+
+            String declareLine = new StringBuffer().append(CamelCaseUtils.convertToCamelCase(schema.getAccessModifier().getValue(), true)).append(SPACE)
+                    .append(CLAZZ).append(SPACE)
+                    .append(schema.getName()).append(SPACE)
+                    .append(BRACE0).append(SPACE)
+                    .toString();
+            bw.write(declareLine);
+
+            for (MapperSchema.MethodSchema method : schema.getMethods()) {
+                String sqlLine = new StringBuffer()
+                        .append(TAB2)
+                        .append(method.getSqlType().getValue())
+                        .append(BRACKET0)
+                        .append(method.getSql().toString())
+                        .append(BRACKET1)
+                        .toString();
+                String methodLine = new StringBuffer()
+                        .append(TAB2)
+                        .append(method.getDeclare())
+                        .toString();
+                bw.newLine();
+                bw.newLine();
+                bw.write(sqlLine);
+                bw.newLine();
+                bw.write(methodLine);
+            }
+
+            bw.write(BRACE1);
+            bw.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static File file(MapperSchema schema){
+        return new File(GENERATE_OUTPUT +File.separator +schema.getName() +JAVA_POST);
     }
 }

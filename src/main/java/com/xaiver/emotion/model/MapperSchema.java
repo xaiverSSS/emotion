@@ -15,6 +15,7 @@ public class MapperSchema {
     private String name;
 
     private List<String> columns;
+
     private List<String> aliasColumns;
 
     private List<MapperSchema.MethodSchema> methods = new LinkedList<>();
@@ -24,6 +25,6 @@ public class MapperSchema {
         private SQLTypeEnum sqlType;
         private SQL sql;
         private Class javaClass;
-        private String name;
+        private String declare;
     }
 }

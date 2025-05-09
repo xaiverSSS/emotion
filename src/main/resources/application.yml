@@ -7,3 +7,5 @@ spring:
     url: jdbc:mysql://tidb-test.uenpay.com:4000/wfmidenti?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
     username: wfmadmin
     password: wfmadmin
+
+generate.output: 
