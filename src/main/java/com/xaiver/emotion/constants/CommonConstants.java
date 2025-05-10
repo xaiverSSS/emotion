@@ -1,7 +1,7 @@
 package com.xaiver.emotion.constants;
 
 public class CommonConstants {
-    public static final String GENERATE_OUTPUT = "generate_output";
+    public static final String GENERATE_OUTPUT = "generate-output";
     public static final String PACKAGE = "package";
     public static final String CLAZZ = "class";
     public static final String JAVA_POST = ".java";

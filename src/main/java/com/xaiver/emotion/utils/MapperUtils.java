@@ -65,25 +65,28 @@ public class MapperUtils {
     public static void write(MapperSchema schema){
         File mapperFile = file(schema);
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(mapperFile))) {
+            // package
             String packageLine = PACKAGE +SPACE +schema.getName() +SEMICOLON;
             bw.write(packageLine);
             bw.newLine();
             bw.newLine();
-
+            // import
+            
+            // declare
             String declareLine = new StringBuffer().append(CamelCaseUtils.convertToCamelCase(schema.getAccessModifier().getValue(), true)).append(SPACE)
                     .append(CLAZZ).append(SPACE)
                     .append(schema.getName()).append(SPACE)
                     .append(BRACE0).append(SPACE)
                     .toString();
             bw.write(declareLine);
-
+            // method
             for (MapperSchema.MethodSchema method : schema.getMethods()) {
                 String sqlLine = new StringBuffer()
                         .append(TAB2)
-                        .append(method.getSqlType().getValue())
-                        .append(BRACKET0)
+                        .append(method.getSqlType().getAnnotation())
+                        .append(BRACKET0).append(QUOTATION2)
                         .append(method.getSql().toString())
-                        .append(BRACKET1)
+                        .append(BRACKET1).append(QUOTATION2)
                         .toString();
                 String methodLine = new StringBuffer()
                         .append(TAB2)

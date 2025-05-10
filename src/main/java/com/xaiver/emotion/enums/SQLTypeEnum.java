@@ -10,8 +10,8 @@ public enum SQLTypeEnum {
     UPDATE("@Update"),
     SELECT("@Select");
 
-    SQLTypeEnum(String value){
-        this.value = value;
+    SQLTypeEnum(String annotation){
+        this.annotation = annotation;
     }
-    private String value;
+    private String annotation;
 }

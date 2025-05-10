@@ -132,6 +132,8 @@ public class SchemaService {
         updateSchema.setJavaClass(Void.class);
         mapperSchema.getMethods().add(updateSchema);
         log.info("mapperSchema:{}", mapperSchema);
+
+        MapperUtils.write(mapperSchema);
         return mapperSchema;
     }
 
