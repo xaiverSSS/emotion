@@ -1,16 +1,20 @@
 package com.xaiver.emotion.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum AnnotationEnum {
 
     INSERT("@Insert", "org.apache.ibatis.annotations.Insert"),
     DELETE("@Delete", "org.apache.ibatis.annotations.Delete"),
     UPDATE("@Update", "org.apache.ibatis.annotations.Update"),
-    SELECT("@Select", "org.apache.ibatis.annotations.Select");
+    SELECT("@Select", "org.apache.ibatis.annotations.Select"),
+    PARAM("@Param", "org.apache.ibatis.annotations.Param");
 
-    AnnotationEnum(String name, String absolutePackage){
-        this.name = name;
-        this.absolutePackage = absolutePackage;
+    AnnotationEnum(String anno, String file){
+        this.anno = anno;
+        this.file = file;
     }
-    private final String name;
-    private final String absolutePackage;
+    private final String anno;
+    private final String file;
 }

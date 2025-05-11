@@ -1,6 +1,7 @@
 package com.xaiver.emotion.utils;
 
 import com.mysql.cj.MysqlType;
+import com.xaiver.emotion.enums.AnnotationEnum;
 import com.xaiver.emotion.model.EntitySchema;
 import com.xaiver.emotion.model.MapperSchema;
 import com.xaiver.emotion.model.TableSchema;
@@ -71,10 +72,19 @@ public class MapperUtils {
             bw.newLine();
             bw.newLine();
             // import
-            
+            schema.getMethods().forEach(e -> {
+                try {
+                    bw.write(IMPORT +SPACE +AnnotationEnum.valueOf(e.getSqlType().name()).getFile() +SEMICOLON);
+                    bw.newLine();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+            bw.write(IMPORT +SPACE +AnnotationEnum.PARAM.getFile() +SEMICOLON);
+            bw.newLine();
             // declare
             String declareLine = new StringBuffer().append(CamelCaseUtils.convertToCamelCase(schema.getAccessModifier().getValue(), true)).append(SPACE)
-                    .append(CLAZZ).append(SPACE)
+                    .append(INTERFACE).append(SPACE)
                     .append(schema.getName()).append(SPACE)
                     .append(BRACE0).append(SPACE)
                     .toString();
@@ -83,10 +93,10 @@ public class MapperUtils {
             for (MapperSchema.MethodSchema method : schema.getMethods()) {
                 String sqlLine = new StringBuffer()
                         .append(TAB2)
-                        .append(method.getSqlType().getAnnotation())
+                        .append(AnnotationEnum.valueOf(method.getSqlType().name()).getAnno())
                         .append(BRACKET0).append(QUOTATION2)
-                        .append(method.getSql().toString())
-                        .append(BRACKET1).append(QUOTATION2)
+                        .append(method.getSql().toString().replaceAll("\\n", ""))
+                        .append(QUOTATION2).append(BRACKET1)
                         .toString();
                 String methodLine = new StringBuffer()
                         .append(TAB2)
@@ -98,7 +108,7 @@ public class MapperUtils {
                 bw.newLine();
                 bw.write(methodLine);
             }
-
+            bw.newLine();
             bw.write(BRACE1);
             bw.flush();
         } catch (IOException e) {

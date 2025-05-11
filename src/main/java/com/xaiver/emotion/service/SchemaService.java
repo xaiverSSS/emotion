@@ -126,7 +126,7 @@ public class SchemaService {
         mapperSchema.getMethods().add(selectSchema);
 
         MapperSchema.MethodSchema updateSchema = new MapperSchema.MethodSchema();
-        updateSchema.setSql(packSelect());
+        updateSchema.setSql(packUpdate());
         updateSchema.setSqlType(SQLTypeEnum.UPDATE);
         updateSchema.setDeclare(MapperUtils.updateFunName(entitySchema));
         updateSchema.setJavaClass(Void.class);
