@@ -1,5 +1,6 @@
 package com.xaiver.emotion.utils;
 
+import com.xaiver.emotion.enums.AnnotationEnum;
 import com.xaiver.emotion.model.EntitySchema;
 import com.xaiver.emotion.model.TableSchema;
 
@@ -7,6 +8,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.xaiver.emotion.constants.CommonConstants.*;
 import static com.xaiver.emotion.constants.EntityConstants.NAME_POST;
@@ -33,7 +36,18 @@ public class EntityUtils {
             bw.write(packageLine);
             bw.newLine();
             bw.newLine();
-
+            // import
+            Set<Class> types = new HashSet<>();
+            schema.getProps().forEach(e -> types.add(e.getJavaClass()));
+            types.forEach(e -> {
+                try {
+                    bw.write(IMPORT +SPACE + e.getCanonicalName() +SEMICOLON);
+                    bw.newLine();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+            // declare
             String declareLine = new StringBuffer().append(CamelCaseUtils.convertToCamelCase(schema.getAccessModifier().getValue(), true)).append(SPACE)
                     .append(CLAZZ).append(SPACE)
                     .append(schema.getName()).append(SPACE)
