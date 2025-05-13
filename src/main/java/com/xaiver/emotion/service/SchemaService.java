@@ -1,5 +1,6 @@
 package com.xaiver.emotion.service;
 
+import com.xaiver.emotion.configuration.EmotionConfiguration;
 import com.xaiver.emotion.dao.SchemaMapper;
 import com.xaiver.emotion.enums.AccessModifierEnum;
 import com.xaiver.emotion.enums.SQLTypeEnum;
@@ -12,10 +13,13 @@ import com.xaiver.emotion.utils.EntityUtils;
 import com.xaiver.emotion.utils.MapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.jdbc.SQL;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import javax.annotation.Resource;
+import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +31,8 @@ import static com.xaiver.emotion.constants.SchemaConstants.*;
 public class SchemaService {
     @Resource
     private SchemaMapper schemaMapper;
+    @Autowired
+    private EmotionConfiguration emotionConfiguration;
 
     private ThreadLocal<String> databaseTL = new ThreadLocal<>();
     private ThreadLocal<String> tableTL = new ThreadLocal<>();
@@ -37,7 +43,7 @@ public class SchemaService {
             databaseTL.set(database);
             tableTL.set(table);
             String primary = schemaMapper.queryPrimaryKey(database, table);
-            List<TableSchema> schemas = schemaMapper.querySchema(table);
+            List<TableSchema> schemas = schemaMapper.querySchema(database, table);
             schemas.forEach(e->{
                 if(primary.equalsIgnoreCase(e.getColumn())){
                     e.setProperty(CamelCaseUtils.convertToCamelCase(e.getColumn()));
@@ -79,7 +85,9 @@ public class SchemaService {
         for (TableSchema e : schemasTL.get()) {
             EntitySchema.PropSchema prop = new EntitySchema.PropSchema();
             prop.setAccessModifier(AccessModifierEnum.PRIVATE);
-            prop.setJavaClass(ClassWordUtils.getJavaClass(e));
+            Class clazz = ClassWordUtils.getJavaClass(e);
+            clazz = postHandleJavaClass(clazz);
+            prop.setJavaClass(clazz);
             prop.setName(e.getProperty());
             props.add(prop);
         }
@@ -135,6 +143,25 @@ public class SchemaService {
 
         MapperUtils.write(mapperSchema);
         return mapperSchema;
+    }
+
+    /**
+     * javaClass 转换
+     * @param clazz
+     * @return
+     */
+    private Class postHandleJavaClass(Class clazz) {
+        if(clazz.equals(java.sql.Timestamp.class)){
+            if(emotionConfiguration.isForceEntityJavaTypeTimestamp2date()){
+                return java.util.Date.class;
+            }else {
+                return clazz;
+            }
+        }
+        if(clazz.equals(java.sql.Date.class)){
+            return java.util.Date.class;
+        }
+        return clazz;
     }
 
     /**
