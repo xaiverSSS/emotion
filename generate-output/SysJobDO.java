@@ -1,9 +1,9 @@
 package SysJobDO;
 
-import java.lang.Long;
-import java.util.Date;
 import java.lang.Integer;
+import java.lang.Long;
 import java.lang.String;
+import java.util.Date;
 public class SysJobDO { 
 
      private Long id;
